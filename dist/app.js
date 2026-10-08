@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const { DestinationDeck, PhotoLoader } = window.JourneyDiscovery;
+  const { DestinationDeck, PhotoLoader, PhotoQueue } = window.JourneyDiscovery;
   const deck = new DestinationDeck(window.JOURNEY_DESTINATIONS || []);
   const loader = new PhotoLoader({ capacity: 4, timeoutMs: 9000 });
   const $ = (id) => document.getElementById(id);
@@ -13,6 +13,7 @@
   }
 
   const loadImage = (place) => loader.load(imageUrl(place));
+  const queue = new PhotoQueue(deck, loadImage);
 
   async function loadCatalog() {
     const controller = new AbortController();
@@ -23,6 +24,7 @@
       const catalog = await response.json();
       if (!Array.isArray(catalog) || !catalog.length) throw new Error('目的地庫無效');
       deck.add(catalog);
+      if (current !== null) queue.prepare(current);
       $('catalog-note').textContent = `全球 ${deck.size.toLocaleString('zh-TW')} 個地方，等你偶然抵達。`;
     } catch {
       $('catalog-note').textContent = '更多目的地暫時無法載入，先遇見已準備好的風景。';
@@ -47,16 +49,11 @@
     setBusy(true);
     $('status').textContent = '';
     let result;
-    const attempted = new Set();
     try {
-      // A failed network should not leave a visitor waiting through thousands of URLs.
-      for (let attempt = 0; attempt < Math.min(deck.size, 4); attempt++) {
-        const place = deck.next(current);
+      const candidate = await queue.next(current);
+      if (candidate) {
+        const { place, url } = candidate;
         const key = deck.key(place);
-        if (attempted.has(key) || (key === current && deck.size > 1)) continue;
-        attempted.add(key);
-        let url;
-        try { url = await loadImage(place); } catch { continue; }
         const nextPhoto = current === null ? activePhoto : 1 - activePhoto;
         photos[nextPhoto].src = url;
         photos[nextPhoto].alt = place.alt || `${place.country}，${place.name}的景色。`;
@@ -85,21 +82,18 @@
         $('photo-license').textContent = place.license;
         $('photo-license').hidden = false;
         result = { destination: place.name, country: place.country, image: url, encounter: visits };
-        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          await new Promise(resolve => setTimeout(resolve, 800));
-        }
-        break;
+        // CSS handles the crossfade without keeping the action locked.
+        queue.prepare(current);
       }
       if (!result) {
         $('initial-loading').hidden = true;
-        $('status').textContent = '風景暫時載入不了。請確認網路，再試一次。';
+        $('status').textContent = '風景暫時載入不了，還在準備中。稍後再試一次。';
         result = { error: 'images_unavailable' };
       }
     } finally {
       setBusy(false);
     }
     if (result.error) $('button-label').textContent = '再試一次';
-    else if (deck.bag.length) loadImage(deck.records.get(deck.bag[deck.bag.length - 1])).catch(() => {});
     return result;
   }
 

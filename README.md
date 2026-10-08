@@ -2,7 +2,7 @@
 
 A minimal Traditional Chinese travel inspiration website. A scenic photograph and one random destination appear immediately. The visitor can discover another place with one button or the Space key.
 
-The gallery has 1,371 distinct destinations across 158 countries and territories: the original 10 local photographs plus 1,361 additional heritage sites and national parks. Each shuffled round visits every destination once and avoids adjacent repeats across rounds. Loading the larger catalog preserves the current round's history. Photos preload, crossfade, and retain the previous view on a loading failure. The photo cache holds at most four requests; a discovery action stops after four unsuccessful candidates. The page supports mobile layouts, keyboard navigation, reduced motion, and optional browser WebMCP discovery.
+The gallery has 1,371 distinct destinations across 158 countries and territories: the original 10 local photographs plus 1,361 additional heritage sites and national parks. Each shuffled round visits every destination once and avoids adjacent repeats across rounds. Loading the larger catalog preserves the current round's history. Up to three upcoming photos load in parallel; the next action selects a ready photograph without waiting for a slower candidate. Reserving a photo does not mark its destination visited. The photo cache holds at most four requests. Each discovery action waits at most three seconds, retaining the previous view and pending photos on slow networks. Failed photographs are skipped. CSS crossfades do not delay the button. The page supports mobile layouts, keyboard navigation, reduced motion, and optional browser WebMCP discovery.
 
 ## Local preview
 

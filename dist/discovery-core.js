@@ -29,8 +29,8 @@
       // Keep the current round's history when the larger catalog arrives.
       this.bag = shuffled([...this.records.keys()].filter(key => !this.visited.has(key)), this.random);
     }
-    next(currentKey) {
-      if (!this.records.size) return null;
+    peek(currentKey, count = 1) {
+      if (!this.records.size) return [];
       if (!this.bag.length) {
         this.visited.clear();
         this.bag = shuffled([...this.records.keys()], this.random);
@@ -39,9 +39,66 @@
       if (this.bag[last] === currentKey && this.bag.length > 1) {
         [this.bag[0], this.bag[last]] = [this.bag[last], this.bag[0]];
       }
-      const key = this.bag.pop();
+      return this.bag.slice(-count).reverse().map(key => this.records.get(key));
+    }
+    take(key) {
+      const index = this.bag.indexOf(key);
+      if (index < 0) return null;
+      this.bag.splice(index, 1);
       this.visited.add(key);
       return this.records.get(key);
+    }
+    next(currentKey) {
+      const place = this.peek(currentKey)[0];
+      return place ? this.take(this.key(place)) : null;
+    }
+  }
+
+  class PhotoQueue {
+    constructor(deck, load, { capacity = 3, waitMs = 3000 } = {}) {
+      this.deck = deck;
+      this.load = load;
+      this.capacity = capacity;
+      this.waitMs = waitMs;
+      this.entries = [];
+    }
+    prepare(currentKey) {
+      // Reserving a photo does not consume its place in the shuffled round.
+      this.entries = this.entries.filter(entry => {
+        if (entry.state === 'failed') { this.deck.take(entry.key); return false; }
+        return this.deck.bag.includes(entry.key);
+      });
+      const places = this.deck.peek(currentKey, this.capacity);
+      for (const place of places) {
+        const key = this.deck.key(place);
+        if (this.entries.length >= this.capacity) break;
+        if (this.entries.some(entry => entry.key === key)) continue;
+        const entry = { key, place, state: 'pending' };
+        entry.promise = Promise.resolve().then(() => this.load(place)).then(
+          url => { entry.url = url; entry.state = 'ready'; },
+          () => { entry.state = 'failed'; }
+        );
+        this.entries.push(entry);
+      }
+    }
+    async next(currentKey) {
+      this.prepare(currentKey);
+      let timer;
+      const deadline = new Promise(resolve => { timer = setTimeout(() => resolve('timeout'), this.waitMs); });
+      try {
+        for (;;) {
+          const ready = this.entries.find(entry => entry.state === 'ready');
+          if (ready) {
+            this.entries.splice(this.entries.indexOf(ready), 1);
+            this.deck.take(ready.key);
+            return { place: ready.place, url: ready.url };
+          }
+          const pending = this.entries.filter(entry => entry.state === 'pending');
+          if (!pending.length) return null;
+          if (await Promise.race([deadline, ...pending.map(entry => entry.promise)]) === 'timeout') return null;
+        }
+      } finally { clearTimeout(timer); }
+      // Slow requests remain in the bounded queue for a later click.
     }
   }
 
@@ -86,5 +143,5 @@
     }
   }
 
-  root.JourneyDiscovery = { DestinationDeck, PhotoLoader };
+  root.JourneyDiscovery = { DestinationDeck, PhotoLoader, PhotoQueue };
 })(typeof window === 'undefined' ? globalThis : window);
