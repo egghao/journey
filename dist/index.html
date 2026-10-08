@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f9f7">
+  <title>捷旅 Journey — 下一站，心動的地方</title>
+  <meta name="description" content="不用做功課，先讓一張風景帶你出發。隨機遇見世界的高清美景，找到下一趟旅行的期待。">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23252d26'/%3E%3Cpath d='M21 8v11c0 8-11 8-11 1' fill='none' stroke='%23e8edc7' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="destinations.js"></script>
+  <script defer src="discovery-core.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="./" aria-label="捷旅 Journey 首頁"><span class="brand-mark" aria-hidden="true">j.</span><span class="wordmark">journey<span class="brand-chinese">捷旅</span></span></a>
+    <span class="header-note">一點靈感，一趟期待。</span>
+    <span class="edition">TRAVEL, BY CHANCE.</span>
+  </header>
+  <main>
+    <div class="intro">
+      <h1>下一站，<span>心動的地方。</span></h1>
+      <p id="catalog-note">還沒想好去哪？讓世界給你一點靈感。</p>
+    </div>
+    <section class="postcard" aria-label="隨機旅行目的地">
+      <div class="landscape" id="landscape" aria-busy="true">
+        <img class="photo is-active" id="photo-a" alt="" decoding="async">
+        <img class="photo" id="photo-b" alt="" decoding="async" aria-hidden="true">
+        <div class="photo-shade" aria-hidden="true"></div>
+        <div class="photo-topline"><span class="photo-label"><span class="star" aria-hidden="true">✳</span> 偶然，抵達這裡</span><span class="photo-number" id="photo-number">NO. 01</span></div>
+        <div class="photo-bottomline"><span id="photo-country"></span><span class="photo-caption">SOMEWHERE TO LOOK FORWARD TO</span></div>
+        <div class="initial-loading" id="initial-loading"><span class="loader" aria-hidden="true"></span><span>正在遇見一個地方…</span></div>
+      </div>
+      <div class="destination-bar">
+        <div class="destination" id="destination" aria-live="polite" aria-atomic="true">
+          <div class="destination-eyebrow"><span class="pin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.5"/></svg></span><span id="destination-location">世界的某個角落</span></div>
+          <h2 id="destination-name">下一站，等你遇見。</h2>
+          <p class="destination-thought" id="destination-thought">不用做功課，先讓一張風景帶你出發。</p>
+        </div>
+        <div class="next-control">
+          <button type="button" class="shuffle-button" id="shuffle-button">
+            <svg class="dice-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" transform="rotate(-12 12 12)" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="9" r="1.1" fill="currentColor"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/><circle cx="16" cy="15" r="1.1" fill="currentColor"/></svg>
+            <span id="button-label">再遇見一個地方</span>
+            <span class="button-loader loader" aria-hidden="true"></span>
+          </button>
+          <span class="keyboard-hint">按 <kbd>Space</kbd>，也能出發</span>
+        </div>
+      </div>
+      <p class="status" id="status" role="status"></p>
+    </section>
+  </main>
+  <footer>
+    <p>不急著出發。先有一個想去的地方。</p>
+    <span class="credits"><a id="photo-credit" class="photo-credit" target="_blank" rel="noopener noreferrer" hidden></a> <a id="photo-license" class="photo-credit" target="_blank" rel="noopener noreferrer" hidden></a></span>
+  </footer>
+  <noscript><p class="noscript">請開啟 JavaScript，開始隨機探索旅行目的地。</p></noscript>
+</body>
+</html>
